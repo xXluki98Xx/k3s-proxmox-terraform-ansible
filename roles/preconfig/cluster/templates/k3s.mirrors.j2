@@ -1,0 +1,19 @@
+mirrors:
+  docker.io:
+    endpoint:
+      - "http://{{ registry_caching_server }}:5001"
+  quay.io:
+    endpoint:
+      - "http://{{ registry_caching_server }}:5002"
+  k8s.gcr.io:
+    endpoint:
+      - "http://{{ registry_caching_server }}:5003"
+  gcr.io:
+    endpoint:
+      - "http://{{ registry_caching_server }}:5004"
+  ghcr.io:
+    endpoint:
+      - "http://{{ registry_caching_server }}:5005"
+  k3s-cache.rlabs:5006:
+    endpoint:
+      - "http://{{ registry_caching_server }}:5006"

@@ -1,0 +1,18 @@
+- name: "Creating K3S Download Swap Folder"
+  file:
+    path: "{{ item }}"
+    state: directory
+    # mode: 0755
+  loop:
+    - "downloadSwap"
+
+- name: Download k3s binary
+  get_url:
+    url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s{{ item[0] }}
+    checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-{{ item[1] }}.txt
+    dest: downloadSwap/{{ k3s_version }}-k3s-{{ item[1] }}
+  loop:
+    - ["", "amd64"]
+    - ["-arm64", "arm64"]
+    - ["-armhf", "arm"]
+  ignore_errors: yes

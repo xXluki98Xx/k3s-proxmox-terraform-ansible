@@ -1,0 +1,29 @@
+- name: Check for Proxy 
+  shell: grep -c "^{{ proxy_server }}" /etc/apt/apt.conf.d/70debconf || true
+  register: test_proxy
+
+- name: add {{ proxy_server }} as proxy
+  lineinfile:
+    dest: /etc/apt/apt.conf.d/70debconf
+    line: Acquire::http { Proxy "http://{{ proxy_server }}:{{ proxy_server_port }}"; }
+  when: test_proxy.stdout == "0" and proxy_server != ""
+
+- name: Create directory
+  file:
+    path: /etc/rancher/k3s
+    state: directory
+
+- name: Copy K3s registry mirror file
+  template:
+    src: "k3s.mirrors.j2"
+    dest: "/etc/rancher/k3s/registries.yaml"
+    owner: root
+    group: root
+    mode: 0755
+  when: mirrors_enabled == true
+
+- name: Remove K3S registry file
+  ansible.builtin.file:
+    path: "/etc/rancher/k3s/registries.yaml"
+    state: absent
+  when: mirrors_enabled == false

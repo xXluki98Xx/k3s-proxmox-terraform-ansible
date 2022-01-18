@@ -1,20 +1,34 @@
 ---
 - name: test kubeconfig path
   stat:
-    path: ~/.kube/config
+    path: ~/.kube/{{ cluster_name }}-config
   register: kubeconfig_path
 
 - name: replace host ip address in the kubeconfig
   replace:
-    path: ~/.kube/config
+    path: ~/.kube/{{ cluster_name }}-config
     regexp: 'https://127.0.0.1:6443'
     replace: "https://{{ master_ip }}:6443"
   when: kubeconfig_path
 
 - name: Change k3s.yaml permissions to 644
   file:
-    path: ~/.kube/config
-    mode: '600'
+    path: ~/.kube/{{ cluster_name }}-config
+    mode: '644'
+
+# - name: Label Worker Nodes
+#   command: >-
+#     k3s kubectl label node k3s-worker-{{ item }} 'kubernetes.io/role=worker --overwrite'
+#   with_sequence: start=1 end={{ groups['node'] | length }}
+#   changed_when: true
+#   ignore_errors: yes
+
+# - name: Label Storage Nodes
+#   command: >-
+#     k3s kubectl label node k3s-storage-{{ item }} 'kubernetes.io/role=storage --overwrite'
+#   with_sequence: start=1 end={{ groups['storage'] | length }}
+#   changed_when: true
+#   ignore_errors: yes
 
 - name: check if helm is installed /usr/local/bin/helm
   stat:
