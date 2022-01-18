@@ -1,7 +1,23 @@
 ---
-k3s_version: v1.22.2+k3s1
-ansible_user: debian
-systemd_dir: /etc/systemd/system
+sshPort: 202
+sshUser: k3s
+
+ansible_user: "{{ sshUser }}"
+ansible_port: "{{ sshPort }}"
+
+# k3s_version: latest
+k3s_version: v1.22.5+k3s1
+
 master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0]) }}"
-extra_server_args: "--write-kubeconfig-mode=644"
-extra_agent_args: ""
+systemd_dir: /etc/systemd/system
+
+cluster_name: k3s-test
+cluster_domain: cluster.local
+cluster_reboot: true
+
+harden_enabled: false
+
+mirrors_enabled: true
+registry_caching_server: "{{ hostvars[groups['cache'][0]]['ansible_host'] | default(groups['cache'][0]) }}"
+proxy_server: "{{ hostvars[groups['cache'][0]]['ansible_host'] | default(groups['cache'][0]) }}"
+proxy_server_port: 3142

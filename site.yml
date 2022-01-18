@@ -1,24 +1,66 @@
----
-
-- hosts: k3s_cluster
-  gather_facts: yes
-  become: yes
+- name: Preconfig Anible Host
+  hosts: localhost
+  gather_facts: no
+  connection: local
   roles:
-    - role: prereq
-    - role: download
-    - role: raspberrypi
+    - role: preconfig/localhost
 
-- hosts: master
+- name: Determine SSH port
+  hosts: all
+  gather_facts: no
+  roles:
+    - role: ssh
+
+- name: OS Hardening Cluster
+  hosts: all
+  gather_facts: no
+  roles:
+    - role: hardening/os
   become: yes
+
+- name: Install Caching Server
+  hosts: cache
+  roles:
+    - caching
+  become: yes
+
+- name: Config k3s VMs
+  hosts: k3s_cluster
+  roles:
+    - role: raspberrypi
+    - role: preconfig/cluster
+    - role: preconfig/prereq
+    - role: preconfig/download
+    - role: hardening/cluster
+  become: yes
+
+- name: Setup Master
+  hosts: master
   roles:
     - role: k3s/master
-
-- hosts: node
+    # - role: hardening/master
   become: yes
-  roles:
-    - role: k3s/node
 
-- hosts: localhost
+- name: Setup Storage
+  hosts: storage
+  roles:
+    - role: k3s/storage
+  become: yes
+
+- name: Setup Worker
+  hosts: worker
+  roles:
+    - role: k3s/worker
+  become: yes
+
+- name: Postconfig
+  hosts: all
+  gather_facts: no
+  roles:
+    - role: postconfig/cluster
+ 
+- name: Update Ansible Host
+  hosts: localhost
   connection: local
   roles:
    - role: postconfig/localhost
