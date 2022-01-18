@@ -1,0 +1,68 @@
+- name: Preconfig Cloud Init Img
+  hosts: all
+  become: yes
+  vars:
+    ansible_user: root
+    ansible_port: 22
+    ansible_ssh_private_key_file: ~/.ssh/xxx
+
+    template_id: 901
+    # template_name: ubuntu-focal-template
+    template_name: debian-11-template
+    # template_description: "Ubuntu-CloudInit"
+    template_description: "Debian-CloudInit"
+    template_memory: 1024
+    # template_url: https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+    # template_url_sha: "sha256:https://cloud-images.ubuntu.com/focal/current/SHA256SUMS"
+    template_url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-amd64.qcow2
+
+  tasks:
+  - name: "Install required Packages"
+    shell: "apt install --no-install-recommends --no-install-suggests {{ item }}"
+    loop:
+      - "libguestfs-tools"
+
+  - name: "Creating Download Swap Folder"
+    file:
+      path: "{{ item }}"
+      state: directory
+      # mode: 0755
+    loop:
+      - "downloadSwap"
+
+  - name: "Download| Base Image: {{ template_url }}"
+    get_url:
+      # checksum: "{{ template_url_sha }}"
+      url: "{{ template_url }}"
+      dest: downloadSwap/orig-{{ template_url.split("/")[-1] }}
+
+  - name: Copy orig-file to working-file 
+    copy:
+      src: downloadSwap/orig-{{ template_url.split("/")[-1] }}
+      dest: downloadSwap/{{ template_url.split("/")[-1] }}
+      remote_src: yes
+
+  - name: "VM | Install qemu-guest-agent"
+    shell: virt-customize -a downloadSwap/{{ template_url.split("/")[-1] }} --install qemu-guest-agent
+    become: true
+
+  - name: "VM | Create with ID: {{ template_id }}"
+    shell: qm create {{ template_id }} --name {{ template_name }} --memory {{ template_memory }} --net0 virtio,bridge=vmbr0
+
+  - name: "VM | import disk"
+    shell: qm importdisk {{ template_id }} downloadSwap/{{ template_url.split("/")[-1] }} local-lvm
+
+  - name: "VM | change main disk"
+    shell: qm set {{ template_id }} --scsihw virtio-scsi-pci --scsi0 local-lVM |vm-{{ template_id }}-disk-0
+
+  - name: "VM | add cloud-init image"
+    shell: qm set {{ template_id }} --ide2 local-lVM |cloudinit
+
+  - name: "VM | set cloudinit as boot disk"
+    shell: qm set {{ template_id }} --boot c --bootdisk scsi0
+
+  - name: "VM | update serial"
+    shell: qm set {{ template_id }} --serial0 socket --vga serial0
+
+  - name: "VM | generate template"
+    shell: qm template {{ template_id }}
