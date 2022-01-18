@@ -1,0 +1,27 @@
+cluster-domain: {{ cluster_domain }}
+write-kubeconfig-mode: "0644"
+
+protect-kernel-defaults: true
+secrets-encryption: true
+
+kube-apiserver-arg:
+    - 'audit-log-path=/etc/rancher/k3s/audit-log'
+    - 'audit-log-maxage=30'
+    - 'audit-log-maxbackup=10'
+    - 'audit-log-maxsize=100'
+    - 'request-timeout=300s'
+    - 'service-account-lookup=true'
+    - 'enable-admission-plugins=NodeRestriction,PodSecurityPolicy,NamespaceLifecycle,ServiceAccount'
+    - 'anonymous-auth=false'
+
+kube-controller-manager-arg:
+    - 'terminated-pod-gc-threshold=10'
+    - 'use-service-account-credentials=true'
+
+kubelet-arg:
+    - 'streaming-connection-idle-timeout=5m'
+    - 'make-iptables-util-chains=true'
+    - 'anonymous-auth=false'
+
+#node-label:
+#    - "node-role.kubernetes.io/role=master"
