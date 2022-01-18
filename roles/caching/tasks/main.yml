@@ -1,0 +1,70 @@
+- name: Install dependencies
+  apt:
+    name: "{{item}}"
+    state: present
+    update_cache: yes
+  loop:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg-agent
+    - software-properties-common
+    - python3-pip
+
+- name: adding GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: adding repository docker
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+
+- name: install docker
+  apt:
+    name: "{{item}}"
+    state: latest
+    update_cache: yes
+  loop:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+
+- name: Install Docker Module for Python
+  pip:
+    name: "{{ item }}"
+  loop:
+    - docker
+    - docker-compose
+
+- name: activate docker
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Create directory
+  file:
+    path: "/var/lib/caching"
+    state: directory
+  when: mirrors_enabled == true
+
+- name: Manage docker compose file
+  template:
+    src: "{{ item }}.j2"
+    dest: "/var/lib/caching/{{item}}"
+    owner: "root"
+    group: "root"
+  loop:
+    - docker-compose.yml
+  when: mirrors_enabled == true
+
+# use files parameter to use multiple docker-compose.yml files
+- name: deploy Docker Compose stack
+  docker_compose:
+    project_src: /var/lib/caching
+    files:
+    - docker-compose.yml
+    # - docker-compose.prod.yml
+  when: mirrors_enabled == true

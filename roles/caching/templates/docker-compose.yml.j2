@@ -1,0 +1,185 @@
+version: '3.0'
+services:
+
+#
+# docker.io
+#
+  registry_1:
+    image: registry:2.6.2
+    restart: unless-stopped
+    ports:
+      - 5001:5000
+    volumes:
+      - ./registry-docker_io:/var/lib/registry
+    networks:
+      - registry-ui-net
+    environment:
+      REGISTRY_PROXY_REMOTEURL: https://registry-1.docker.io
+
+#  ui_1:
+#    image: joxit/docker-registry-ui:latest
+
+#    ports:
+#      - 6001:80
+#    environment:
+#      - REGISTRY_TITLE=My Private Docker docker.io Registry
+#      - REGISTRY_URL=http://registry_1:5000
+#    depends_on:
+#      - registry_1
+#    networks:
+#      - registry-ui-net
+
+#
+# quay.io
+#
+  registry_2:
+    image: registry:2.6.2
+    restart: unless-stopped
+    ports:
+      - 5002:5000
+    volumes:
+      - ./registry-quay_io:/var/lib/registry
+    networks:
+      - registry-ui-net
+    environment:
+      REGISTRY_PROXY_REMOTEURL: https://quay.io
+
+  # ui_2:
+  #   image: joxit/docker-registry-ui:latest
+  #   ports:
+  #     - 6002:80
+  #   environment:
+  #     - REGISTRY_TITLE=My Private Docker Quay.io Registry Cache
+  #     - REGISTRY_URL=http://registry_2:5000
+  #   depends_on:
+  #     - registry_2
+  #   networks:
+  #     - registry-ui-net
+
+#
+# k8s.gcr.io
+#
+  registry_3:
+    image: registry:2.6.2
+    restart: unless-stopped
+    ports:
+      - 5003:5000
+    volumes:
+      - ./registry-k8s_grc_io:/var/lib/registry
+    networks:
+      - registry-ui-net
+    environment:
+      REGISTRY_PROXY_REMOTEURL: https://k8s.gcr.io
+
+  # ui_3:
+  #   image: joxit/docker-registry-ui:latest
+  #   ports:
+  #     - 6003:80
+  #   environment:
+  #     - REGISTRY_TITLE=My Private Docker k8s.gcr.io Registry
+  #     - REGISTRY_URL=http://registry_3:5000
+  #   depends_on:
+  #     - registry_3
+  #   networks:
+  #     - registry-ui-net
+
+#
+# gcr.io
+#
+  registry_4:
+    image: registry:2.6.2
+    restart: unless-stopped
+    ports:
+      - 5004:5000
+    volumes:
+      - ./registry-gcr_io:/var/lib/registry
+    networks:
+      - registry-ui-net
+    environment:
+      REGISTRY_PROXY_REMOTEURL: https://gcr.io
+
+  # ui_4:
+  #   image: joxit/docker-registry-ui:latest
+  #   ports:
+  #     - 6004:80
+  #   environment:
+  #     - REGISTRY_TITLE=My Private Docker gcr.io Registry Cache
+  #     - REGISTRY_URL=http://registry_4:5000
+  #   depends_on:
+  #     - registry_4
+  #   networks:
+  #     - registry-ui-net
+
+#
+# ghcr.io
+#
+  registry_5:
+    image: registry:2.6.2
+    restart: unless-stopped
+    ports:
+      - 5005:5000
+    volumes:
+      - ./registry-ghcr_io:/var/lib/registry
+    networks:
+      - registry-ui-net
+    environment:
+      REGISTRY_PROXY_REMOTEURL: https://ghcr.io
+
+  # ui_5:
+  #   image: joxit/docker-registry-ui:latest
+  #   ports:
+  #     - 6005:80
+  #   environment:
+  #     - REGISTRY_TITLE=My Private Docker ghcr.io Registry
+  #     - REGISTRY_URL=http://registry_5:5000
+  #   depends_on:
+  #     - registry_5
+  #   networks:
+  #     - registry-ui-net
+
+#
+# inhouse
+#
+  registry_6:
+    image: registry:2.6.2
+    restart: unless-stopped
+    ports:
+      - 5006:5000
+    volumes:
+      - ./registry-inhouse:/var/lib/registry
+    networks:
+      - registry-ui-net
+    # environment:
+    #   REGISTRY_PROXY_REMOTEURL: https://ghcr.io
+
+  ui_6:
+    image: joxit/docker-registry-ui:static
+    restart: unless-stopped
+    ports:
+      - 6006:80
+    environment:
+      - REGISTRY_TITLE=My Private Docker inhouse Registry
+      - REGISTRY_URL=http://registry_6:5000
+      - DELETE_IMAGES=true
+#      - SINGLE_REGISTRY=true
+#      - NGINX_PROXY_PASS_URL="http://k3s-cache.rlabs:6006"
+    depends_on:
+      - registry_6
+    networks:
+      - registry-ui-net
+
+#
+# package proxy
+#
+  apt-cacher-ng:
+    image: "lramm/apt-cacher-ng"
+    restart: unless-stopped
+    # pull: Always
+    ports:
+      - 3142:3142
+    volumes:
+      - ./cache:/var/cache/apt-cacher-ng/
+      - ./mirror_list:/etc/apt-cacher-ng/mirror_list.d/
+
+networks:
+  registry-ui-net:
