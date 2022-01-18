@@ -1,0 +1,158 @@
+# https://austinsnerdythings.com/2021/09/01/how-to-deploy-vms-in-proxmox-with-terraform/
+
+variable "proxmox-host" {
+  description = "The IP for the DB host"
+  type        = string
+  default     = ""
+}
+
+variable "token" {
+  type        = string
+  default     = ""
+}
+
+variable "secret" {
+  type        = string
+  default     = ""
+}
+
+variable "accounts" {
+  type = map
+  
+  default = {
+    "user"          = "k3s"
+    "password"      = "xxx"
+    "sshKeyPath"    = "~/.ssh/xxx"
+    "sshKeyPathPub" = "~/.ssh/xxx.pub"
+    # "sshKey"    = "${file(var.accounts.sshKeyPath)}"
+  }
+}
+
+
+# Source the Cloud Init Config file
+data "template_file" "cloud_init_k3s" {
+  template    = "${file("${path.module}/templates/cloud_init.cloud_config")}"
+
+  vars = {
+    user      = ""
+    port      = ""
+    ssh_key   = "${file(var.accounts.sshKeyPathPub)}"
+  }
+}
+
+variable "basic" {
+  type = map
+
+  default = {
+    "gateway"     = "172.16.20.1"
+    "network"     = "172.16.20"
+    "subnet"      = "24"
+    "vmid"        = 1000
+    "vlan"        = 20
+    "masterMac"   = ""
+    "storageMac"  = ""
+    "cacheMac"    = ""
+  }
+}
+
+# https://rancher.com/docs/k3s/latest/en/installation/installation-requirements/#cpu-and-memory
+
+variable "master" {
+  type = map
+  
+  default = {
+    "name"    = "k3s-master"
+    "count"   = 1
+    "cpu"     = 4
+    "memory"  = 1024 * 6
+    "image"   = "debian-11-template"
+    "onboot"  = true
+    "ip"      = 50
+    "sockets" = 1
+    "diskSize"  = "15G"
+    "diskType"  = "scsi"
+  }
+}
+
+variable "master_nodes" {
+  default = [
+    "##proxmoxnode##",
+  ]
+}
+
+variable "worker" {
+  type = map
+  
+  default = {
+    "name"    = "k3s-worker"
+    "count"   = 3
+    "cpu"     = 4
+    "memory"  = 1024 * 10
+    "image"   = "debian-11-template"
+    "onboot"  = true
+    "ip"      = 100
+    "sockets" = 1
+    "diskSize"  = "15G"
+    "diskType"  = "scsi"
+  }
+}
+
+variable "worker_nodes" {
+  default = [
+    "##proxmoxnode##",
+  ]
+}
+
+variable "storage" {
+  type = map
+  
+  default = {
+    "name"    = "k3s-storage"
+    "count"   = 2
+    "cpu"     = 4
+    "memory"  = 1024 * 6
+    "image"   = "debian-11-template"
+    "onboot"  = true
+    "ip"      = 60
+    "sockets" = 1
+    "diskSize"  = "50G"
+    "diskType"  = "scsi"
+  }
+}
+
+variable "storage_nodes" {
+  default = [
+    "##proxmoxnode##",
+  ]
+}
+
+variable "caching" {
+  type = map
+  
+  default = {
+    "name"    = "k3s-cache"
+    "count"   = 1
+    "cpu"     = 2
+    "memory"  = 1024 * 2
+    "image"   = "debian-11-template"
+    "onboot"  = true
+    "ip"      = 70
+    "sockets" = 1
+    "diskSize"  = "50G"
+    "diskType"  = "scsi"
+  }
+}
+
+variable "caching_nodes" {
+  default = [
+    "##proxmoxnode##",
+  ]
+}
+
+variable "storage_volumes" {
+  type = map
+
+  default = {
+    "##proxmoxnode##"  = "k3s-storage"
+  }
+}
