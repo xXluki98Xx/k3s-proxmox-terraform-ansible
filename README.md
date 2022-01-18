@@ -1,3 +1,63 @@
+# Original work was extended to
+
+* Hardening for OS (and K3s Cluster)
+* Storage Nodes
+* Caching Server for Container Images and Package Caching
+* Bandwidth reduction due to proxy usage
+* Added Playbook for VM-Template creation
+
+Currently only on Debian 11 tested
+
+### Prework
+
+```bash
+cp terraform/vars.tf-example terraform/vars.tf
+cp -R inventory/sample inventory/my-cluster
+```
+
+### Proxmox setup
+
+The "cloudinit.yml" contains a simple Ansible Workflow to create a template VM for the Proxmox k3s.
+
+```bash
+ansible-playbook -i proxmoxServerIp, cloudinit.yml
+```
+
+### Terraform setup
+
+To get started with the Terraform part you need to provide the Credentials for your Proxmox Server/ Cluster.
+If you did not know how, take a look [here](https://austinsnerdythings.com/2021/09/01/how-to-deploy-vms-in-proxmox-with-terraform/).
+
+Setup your k3s Cluster Config in the vars.tf, after you apply, the ansible inventory file will be created.
+The Terraform Config uses the template vm from the cloudinit.yml, which has to be present on each node you want to interact with.
+Terraform is going to set the sshkey, -user, -password to the VMs it is going to create.
+
+```bash
+cd terraform
+
+terraform init
+terraform plan
+terraform apply
+```
+
+### Ansible setup
+
+One finished you can run the following code, but be sure to update the yml in the group_vars folder.
+
+```bash
+ansible-playbook site.yml -i inventory/my-cluster/hosts.ini
+```
+
+### Kubeconfig
+
+At the end, the kube.conf will be copied to your local machine to ~/.kube/{{ cluster_name }}-config
+
+---
+
+## Original README below
+
+---
+
 # Build a Kubernetes cluster using k3s on Proxmox via Ansible and Terraform
 
 This is based on the great work that <https://github.com/itwars> done with Ansible, all I left to do is to put it all together with terraform and Proxmox!
