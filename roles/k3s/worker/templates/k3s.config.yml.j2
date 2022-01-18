@@ -1,0 +1,3 @@
+server: "https://{{ master_ip }}:6443"
+
+token: {{ hostvars[groups['master'][0]]['token'] }} {{ extra_agent_args | default("") }}

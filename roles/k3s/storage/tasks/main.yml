@@ -1,12 +1,21 @@
 ---
 
 - name: Copy K3s service file
+  register: k3s_service
   template:
     src: "k3s.service.j2"
     dest: "{{ systemd_dir }}/k3s-node.service"
     owner: root
     group: root
     mode: 0755
+
+- name: Copy K3S Config file
+  template:
+    src: "k3s.config.yml.j2"
+    dest: "/etc/rancher/k3s/config.yml"
+    owner: root
+    group: root
+    mode: 0644
 
 - name: Enable and check K3s service
   systemd:

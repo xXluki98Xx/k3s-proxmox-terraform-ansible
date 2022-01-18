@@ -1,4 +1,11 @@
----
+- name: Check if Service Exists
+  stat: path={{ systemd_dir }}/k3s.service
+  register: service_status
+
+- name: Stop Service
+  service: name=k3s state=stopped
+  when: service_status.stat.exists
+  register: service_stopped
 
 - name: Copy K3s service file
   register: k3s_service
@@ -8,6 +15,55 @@
     owner: root
     group: root
     mode: 0644
+
+- name: Copy K3 Config file
+  template:
+    src: "k3s.config.yml.j2"
+    dest: "/etc/rancher/k3s/config.yml"
+    owner: root
+    group: root
+    mode: 0644
+  when: harden_enabled == false
+
+- name: Copy K3S Harden Config file
+  template:
+    src: "k3s.config.harden.yml.j2"
+    dest: "/etc/rancher/k3s/config.yml"
+    owner: root
+    group: root
+    mode: 0644
+  when: harden_enabled == true
+
+- name: Create Audit-Log
+  copy:
+    content: ""
+    dest: "/etc/rancher/k3s/audit-log"
+    force: no
+    group: root
+    owner: root
+    mode: 0644
+  when: harden_enabled == true
+
+- name: Remove Audit-Log file
+  ansible.builtin.file:
+    path: "/etc/rancher/k3s/audit-log"
+    state: absent
+  when: harden_enabled == false
+
+- name: Copy Policy file
+  template:
+    src: "k3s.policy.yml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/policy.yml"
+    owner: root
+    group: root
+    mode: 0644
+  when: harden_enabled == true
+
+- name: Remove Policy file
+  ansible.builtin.file:
+    path: "/var/lib/rancher/k3s/server/manifests/policy.yml"
+    state: absent
+  when: harden_enabled == false
 
 - name: Enable and check K3s service
   systemd:
@@ -79,5 +135,5 @@
 - name: copy config to local host
   fetch:
     src: /etc/rancher/k3s/k3s.yaml 
-    dest: ~/.kube/config
+    dest: ~/.kube/{{ cluster_name }}-config
     flat: yes

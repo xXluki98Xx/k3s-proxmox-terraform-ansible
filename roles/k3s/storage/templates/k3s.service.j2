@@ -3,11 +3,13 @@ Description=Lightweight Kubernetes
 Documentation=https://k3s.io
 After=network-online.target
 
+[Install]
+WantedBy=multi-user.target
+
 [Service]
 Type=notify
 ExecStartPre=-/sbin/modprobe br_netfilter
 ExecStartPre=-/sbin/modprobe overlay
-ExecStart=/usr/local/bin/k3s agent --server https://{{ master_ip }}:6443 --token {{ hostvars[groups['master'][0]]['token'] }} {{ extra_agent_args | default("") }}
 KillMode=process
 Delegate=yes
 # Having non-zero Limit*s causes performance problems due to accounting overhead
@@ -19,6 +21,5 @@ TasksMax=infinity
 TimeoutStartSec=0
 Restart=always
 RestartSec=5s
-
-[Install]
-WantedBy=multi-user.target
+ExecStart=/usr/local/bin/k3s agent \
+    --config='/etc/rancher/k3s/config.yml'
