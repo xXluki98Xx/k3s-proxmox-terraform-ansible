@@ -23,5 +23,5 @@ kubelet-arg:
     - 'make-iptables-util-chains=true'
     - 'anonymous-auth=false'
 
-#node-label:
-#    - "node-role.kubernetes.io/role=master"
+node-label:
+    - "node.kubernetes.io/master"
