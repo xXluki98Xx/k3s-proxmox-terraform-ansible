@@ -1,13 +1,14 @@
 # https://stackoverflow.com/questions/34333058/ansible-change-ssh-port-in-playbook
 
-- name: "check port {{ ansible_port }}"
+- name: "check port hardened ssh port"
   wait_for:
     port: "{{ ansible_port }}"
     state: "started"
     host: "{{ inventory_hostname }}"
     connect_timeout: "5"
     timeout: "5"
-  ignore_errors: "yes"
+  delegate_to: "localhost"
+  ignore_errors: true
   register: ssh_port
 
 - name: "check port 22"
@@ -17,7 +18,8 @@
     host: "{{ inventory_hostname }}"
     connect_timeout: "5"
     timeout: "5"
-  ignore_errors: "yes"
+  delegate_to: "localhost"
+  ignore_errors: true
   register: ssh_port_default
   when: 
     - ssh_port is defined 
