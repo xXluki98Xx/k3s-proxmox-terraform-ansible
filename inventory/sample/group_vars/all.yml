@@ -1,23 +1,22 @@
----
-sshPort: 202
 sshUser: k3s
+sshPort: 202
 
 ansible_user: "{{ sshUser }}"
 ansible_port: "{{ sshPort }}"
 
-# k3s_version: latest
 k3s_version: v1.22.5+k3s1
+download_local: false
+harden_enabled: false
+caching_enabled: true
 
 master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0]) }}"
 systemd_dir: /etc/systemd/system
 
 cluster_name: k3s-test
 cluster_domain: cluster.local
-cluster_reboot: true
+cluster_reboot: false
 
-harden_enabled: false
-
-mirrors_enabled: true
-registry_caching_server: "{{ hostvars[groups['cache'][0]]['ansible_host'] | default(groups['cache'][0]) }}"
-proxy_server: "{{ hostvars[groups['cache'][0]]['ansible_host'] | default(groups['cache'][0]) }}"
-proxy_server_port: 3142
+caching_registry_server_fqdn: k3s-cache.rlabs
+caching_registry_server: ""
+caching_proxy_server: ""
+caching_proxy_server_port: 3142

@@ -20,6 +20,7 @@
 
 - name: Install Caching Server
   hosts: cache
+  gather_facts: no
   roles:
     - caching
   become: yes
@@ -38,7 +39,6 @@
   hosts: master
   roles:
     - role: k3s/master
-    # - role: hardening/master
   become: yes
 
 - name: Setup Storage

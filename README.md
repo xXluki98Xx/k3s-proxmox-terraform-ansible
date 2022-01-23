@@ -5,14 +5,20 @@
 * Caching Server for Container Images and Package Caching
 * Bandwidth reduction due to proxy usage
 * Added Playbook for VM-Template creation
+* Terraform can now create an equal cluster on Proxmox and in Hetzner Cloud
 
 Currently only on Debian 11 tested
 
 ### Prework
 
 ```bash
-cp terraform/vars.tf-example terraform/vars.tf
-cp -R inventory/sample inventory/my-cluster
+cp terraform-proxmox/vars.tf-example terraform/vars.tf
+
+cp -R inventory/sample inventory/my-proxmox-cluster
+
+OR
+
+cp -R inventory/sample inventory/my-hetzner-cluster
 ```
 
 ### Proxmox setup
@@ -33,7 +39,7 @@ The Terraform Config uses the template vm from the cloudinit.yml, which has to b
 Terraform is going to set the sshkey, -user, -password to the VMs it is going to create.
 
 ```bash
-cd terraform
+cd terraform*
 
 terraform init
 terraform plan
@@ -45,7 +51,11 @@ terraform apply
 One finished you can run the following code, but be sure to update the yml in the group_vars folder.
 
 ```bash
-ansible-playbook site.yml -i inventory/my-cluster/hosts.ini
+ansible-playbook site.yml -i inventory/my-proxmox-cluster/hosts.ini
+
+OR
+
+ansible-playbook site.yml -i inventory/my-hetzner-cluster/hosts.ini
 ```
 
 ### Kubeconfig
