@@ -1,0 +1,113 @@
+variable "token" {
+  type        = string
+  default     = ""
+}
+
+variable "accounts" {
+  type = map
+  
+  default = {
+    "user"          = "k3s"
+    "password"      = "xxx"
+    "sshKeyPath"    = "~/.ssh/xxx"
+    "sshKeyPathPub" = "~/.ssh/xxx.pub"
+  }
+}
+
+# Source the Cloud Init Config file
+data "template_file" "cloud_init_k3s" {
+  template    = "${file("${path.module}/templates/cloud_init.cloud_config")}"
+
+  vars = {
+    user      = "k3s"
+    password  = var.accounts.password
+    port      = "202"
+    tries     = 5
+    ssh_key   = "${file(var.accounts.sshKeyPathPub)}"
+  }
+}
+
+variable "basic" {
+  type = map
+
+  default = {
+    "network"     = "10.0.0.0/16"
+    "subnetwork"  = "10.0.1.0/24"
+    "networkzone" = "eu-central"
+    "ipset"       = "10.0.1"
+  }
+}
+
+# https://rancher.com/docs/k3s/latest/en/installation/installation-requirements/#cpu-and-memory
+
+variable "master" {
+  type = map
+  
+  default = {
+    "name"      = "k3s-master"
+    "count"     = 1
+    "type"      = "cpx11"
+    "image"     = "debian-11"
+    "ip"        = 20
+  }
+}
+
+variable "master_nodes" {
+  default = [
+    "##hetznerdatacenter##",
+  ]
+}
+
+variable "worker" {
+  type = map
+  
+  default = {
+    "name"      = "k3s-worker"
+    "count"     = 1
+    "type"      = "cpx11"
+    "image"     = "debian-11"
+    "ip"        = 100
+  }
+}
+
+variable "worker_nodes" {
+  default = [
+    "##hetznerdatacenter##",
+  ]
+}
+
+variable "storage" {
+  type = map
+  
+  default = {
+    "name"      = "k3s-storage"
+    "count"     = 1
+    "type"      = "cpx11"
+    "image"     = "debian-11"
+    "ip"        = 50
+  }
+}
+
+variable "storage_nodes" {
+  default = [
+    "##hetznerdatacenter##",
+  ]
+}
+
+variable "caching" {
+  type = map
+  
+  default = {
+    "name"      = "k3s-cache"
+    "count"     = 0
+    "type"      = "cpx11"
+    "image"     = "debian-11"
+    "ip"        = 80
+  }
+}
+
+variable "caching_nodes" {
+  default = [
+    "##hetznerdatacenter##",
+  ]
+}
