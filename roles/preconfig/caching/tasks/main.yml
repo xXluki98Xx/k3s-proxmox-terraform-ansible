@@ -1,10 +1,30 @@
+- name: "check if caching server could be set"
+  set_fact: 
+    caching_registry_server: "{{ groups['cache'][0] }}"
+  when:
+    - groups['cache'] | length > 0
+    - caching_registry_server == ''
+
+- name: "check if proxy server could be set"
+  set_fact: 
+    caching_proxy_server: "{{ groups['cache'][0] }}"
+  when:
+    - groups['cache'] | length > 0
+    - caching_proxy_server == ''
+
+- name: "test if chaching could enabled"
+  set_fact:
+    caching_enabled: false
+  when: 
+    - caching_registry_server == ''
+
 - name: check for proxy 
   shell: grep -c "^{{ caching_proxy_server }}" /etc/apt/apt.conf.d/70debconf || true
   register: test_proxy
   when: 
     - caching_proxy_server != ''
 
-- name: add {{ caching_proxy_server }} as proxy
+- name: add proxy to apt conf
   lineinfile:
     dest: /etc/apt/apt.conf.d/70debconf
     line: Acquire::http { Proxy "http://{{ caching_proxy_server }}:{{ caching_proxy_server_port }}"; }

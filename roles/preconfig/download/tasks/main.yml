@@ -1,5 +1,3 @@
----
-
 - name: local - download k3s binary x64
   copy:
     src: downloadSwap/{{ k3s_version }}-k3s-amd64
