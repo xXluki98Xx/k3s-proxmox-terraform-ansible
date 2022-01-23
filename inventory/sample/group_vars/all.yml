@@ -17,6 +17,7 @@ cluster_domain: cluster.local
 cluster_reboot: false
 
 caching_registry_server_fqdn: k3s-cache.rlabs
+caching_registry_server_fqdn_port: 5006
 caching_registry_server: ""
 caching_proxy_server: ""
 caching_proxy_server_port: 3142

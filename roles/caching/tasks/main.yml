@@ -6,9 +6,9 @@
   loop:
     - ca-certificates
     - curl
-    - apt-transport-https
-    - gnupg-agent
     - gnupg
+    - gnupg-agent
+    - apt-transport-https
     - software-properties-common
     - python3-pip
 

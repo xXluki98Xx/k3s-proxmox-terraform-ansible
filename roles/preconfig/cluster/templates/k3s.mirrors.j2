@@ -14,6 +14,6 @@ mirrors:
   ghcr.io:
     endpoint:
       - "http://{{ caching_registry_server }}:5005"
-  {{ caching_registry_server_fqdn }}{{ caching_registry_server_fqdn_port }}:
+  {{ caching_registry_server_fqdn }}:{{ caching_registry_server_fqdn_port }}:
     endpoint:
-      - "http://{{ caching_registry_server }}:5006"
+      - "http://{{ caching_registry_server }}:{{ caching_registry_server_fqdn_port }}"

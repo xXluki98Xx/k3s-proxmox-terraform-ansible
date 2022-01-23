@@ -144,13 +144,11 @@ services:
     image: registry:2.6.2
     restart: unless-stopped
     ports:
-      - 5006:5000
+      - {{ caching_registry_server_fqdn_port }}:5000
     volumes:
       - ./registry-inhouse:/var/lib/registry
     networks:
       - registry-ui-net
-    # environment:
-    #   REGISTRY_PROXY_REMOTEURL: https://ghcr.io
 
   ui_6:
     image: joxit/docker-registry-ui:static
@@ -162,7 +160,7 @@ services:
       - REGISTRY_URL=http://registry_6:5000
       - DELETE_IMAGES=true
 #      - SINGLE_REGISTRY=true
-#      - NGINX_PROXY_PASS_URL="http://k3s-cache.rlabs:6006"
+#      - NGINX_PROXY_PASS_URL="http://{{ caching_registry_server_fqdn }}:{{ caching_registry_server_fqdn_port }}"
     depends_on:
       - registry_6
     networks:
