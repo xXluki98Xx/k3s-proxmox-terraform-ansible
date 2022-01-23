@@ -12,12 +12,12 @@ Currently only on Debian 11 tested
 ### Prework
 
 ```bash
-cp terraform-proxmox/vars.tf-example terraform/vars.tf
-
+cp terraform-proxmox/vars.tf-example terraform-proxmox/vars.tf
 cp -R inventory/sample inventory/my-proxmox-cluster
 
 OR
 
+cp terraform-hetzner/vars.tf-example terraform-hetzner/vars.tf
 cp -R inventory/sample inventory/my-hetzner-cluster
 ```
 
