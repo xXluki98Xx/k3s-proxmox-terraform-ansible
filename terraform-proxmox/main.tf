@@ -200,7 +200,7 @@ data "template_file" "k3s" {
 
 resource "local_file" "k3s_file" {
   content  = data.template_file.k3s.rendered
-  filename = "../inventory/my-cluster/hosts.ini"
+  filename = "../inventory/my-proxmox-cluster/hosts.ini"
 }
 
 output "master-IPs" {
