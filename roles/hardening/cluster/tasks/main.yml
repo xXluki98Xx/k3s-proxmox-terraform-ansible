@@ -1,7 +1,6 @@
 # https://rancher.com/docs/k3s/latest/en/security/hardening_guide/
 
-- name: Copy kernel file
-  # register: k3s_service
+- name: copy kernel file
   template:
     src: "90-kubelet.conf.j2"
     dest: "/etc/sysctl.d/90-kubelet.conf"
@@ -10,8 +9,8 @@
     mode: 0644
   when: harden_enabled == true
 
-- name: Load kernel conf
-  ansible.builtin.command:
+- name: load kernel conf
+  command:
     argv:
       - sysctl
       - -p
@@ -19,14 +18,14 @@
   become: yes
   when: harden_enabled == true
 
-- name: Remove kernel file
-  ansible.builtin.file:
+- name: remove kernel file
+  file:
     path: "/etc/sysctl.d/90-kubelet.conf"
     state: absent
   when: harden_enabled == false
 
-- name: Reload kernel conf
-  ansible.builtin.command:
+- name: reload kernel conf
+  command:
     argv:
       - sysctl
       - -p

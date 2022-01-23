@@ -1,13 +1,14 @@
-- name: Install dependencies
+- name: install dependencies
   apt:
     name: "{{item}}"
     state: present
     update_cache: yes
   loop:
-    - apt-transport-https
     - ca-certificates
     - curl
+    - apt-transport-https
     - gnupg-agent
+    - gnupg
     - software-properties-common
     - python3-pip
 
@@ -23,7 +24,7 @@
 
 - name: install docker
   apt:
-    name: "{{item}}"
+    name: "{{ item }}"
     state: latest
     update_cache: yes
   loop:
@@ -31,7 +32,7 @@
     - docker-ce-cli
     - containerd.io
 
-- name: Install Docker Module for Python
+- name: install docker module for python
   pip:
     name: "{{ item }}"
   loop:
@@ -44,13 +45,13 @@
     state: started
     enabled: yes
 
-- name: Create directory
+- name: create directory
   file:
     path: "/var/lib/caching"
     state: directory
-  when: mirrors_enabled == true
+  when: caching_enabled == true
 
-- name: Manage docker compose file
+- name: manage docker compose file
   template:
     src: "{{ item }}.j2"
     dest: "/var/lib/caching/{{item}}"
@@ -58,13 +59,13 @@
     group: "root"
   loop:
     - docker-compose.yml
-  when: mirrors_enabled == true
+  when: caching_enabled == true
 
 # use files parameter to use multiple docker-compose.yml files
-- name: deploy Docker Compose stack
+- name: deploy docker compose stack
   docker_compose:
     project_src: /var/lib/caching
     files:
     - docker-compose.yml
     # - docker-compose.prod.yml
-  when: mirrors_enabled == true
+  when: caching_enabled == true

@@ -1,18 +1,41 @@
-- name: "Creating K3S Download Swap Folder"
+- name: "creating k3s download swap folder"
   file:
     path: "{{ item }}"
     state: directory
-    # mode: 0755
   loop:
     - "downloadSwap"
+  when:
+    - download_local == true
 
-- name: Download k3s binary
+- name: "download k3s binary"
   get_url:
     url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s{{ item[0] }}
     checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-{{ item[1] }}.txt
     dest: downloadSwap/{{ k3s_version }}-k3s-{{ item[1] }}
   loop:
-    - ["", "amd64"]
-    - ["-arm64", "arm64"]
-    - ["-armhf", "arm"]
+    - [ "", "amd64" ]
+    - [ "-arm64", "arm64" ]
+    - [ "-armhf", "arm" ]
   ignore_errors: yes
+  when:
+    - download_local == true
+
+- name: "check if chaching server could be set"
+  set_fact: 
+    caching_registry_server: "{{ groups['cache'][0] }}"
+  when:
+    - groups['cache'] | length > 0
+    - caching_registry_server == ''
+
+- name: "check if proxy server could be set"
+  set_fact: 
+    caching_proxy_server: "{{ groups['cache'][0] }}"
+  when:
+    - groups['cache'] | length > 0
+    - caching_proxy_server == ''
+
+- name: "test if chaching could enabled"
+  set_fact:
+    caching_enabled: false
+  when: 
+    - caching_registry_server == ''

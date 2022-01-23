@@ -1,29 +1,44 @@
-- name: Check for Proxy 
-  shell: grep -c "^{{ proxy_server }}" /etc/apt/apt.conf.d/70debconf || true
+- name: check for proxy 
+  shell: grep -c "^{{ caching_proxy_server }}" /etc/apt/apt.conf.d/70debconf || true
   register: test_proxy
+  when: 
+    - caching_proxy_server != ''
 
-- name: add {{ proxy_server }} as proxy
+- name: add {{ caching_proxy_server }} as proxy
   lineinfile:
     dest: /etc/apt/apt.conf.d/70debconf
-    line: Acquire::http { Proxy "http://{{ proxy_server }}:{{ proxy_server_port }}"; }
-  when: test_proxy.stdout == "0" and proxy_server != ""
+    line: Acquire::http { Proxy "http://{{ caching_proxy_server }}:{{ caching_proxy_server_port }}"; }
+  when: 
+    - caching_proxy_server != ''
+    - test_proxy.stdout == "0"
 
-- name: Create directory
+- name: remove proxy from 70debconf
+  lineinfile:
+    dest: /etc/apt/apt.conf.d/70debconf
+    regexp: '(Acquire::http { .*)'
+    line: '\1'
+    state: absent
+  when: 
+    - caching_proxy_server == ''
+
+- name: create directory
   file:
     path: /etc/rancher/k3s
     state: directory
 
-- name: Copy K3s registry mirror file
+- name: copy k3s registry mirror file
   template:
     src: "k3s.mirrors.j2"
     dest: "/etc/rancher/k3s/registries.yaml"
     owner: root
     group: root
     mode: 0755
-  when: mirrors_enabled == true
+  when: 
+    - caching_enabled == true
 
-- name: Remove K3S registry file
-  ansible.builtin.file:
+- name: remove k3s registry file
+  file:
     path: "/etc/rancher/k3s/registries.yaml"
     state: absent
-  when: mirrors_enabled == false
+  when: 
+    - caching_enabled == false

@@ -1,4 +1,4 @@
-- name: Copy k3s Harden Config file
+- name: copy k3s harden config file
   template:
     src: "k3s.config.harden.yml.j2"
     dest: "/etc/rancher/k3s/config.yml"
@@ -7,7 +7,7 @@
     mode: 0644
   when: harden_enabled == true
 
-- name: Create Audit-Log
+- name: create audit-log
   copy:
     content: ""
     dest: "/etc/rancher/k3s/audit-log"
@@ -17,13 +17,13 @@
     mode: 0644
   when: harden_enabled == true
 
-- name: Remove Audit-Log file
+- name: remove audit-log file
   ansible.builtin.file:
     path: "/etc/rancher/k3s/audit-log"
     state: absent
   when: harden_enabled == false
 
-- name: Copy Policy file
+- name: copy policy file
   template:
     src: "k3s.policy.yml.j2"
     dest: "/var/lib/rancher/k3s/server/manifests/policy.yml"
@@ -32,13 +32,13 @@
     mode: 0644
   when: harden_enabled == true
 
-- name: Remove Policy file
+- name: remove policy file
   ansible.builtin.file:
     path: "/var/lib/rancher/k3s/server/manifests/policy.yml"
     state: absent
   when: harden_enabled == false
 
-- name: Enable and check K3s service
+- name: enable and check k3s service
   systemd:
     name: k3s
     daemon_reload: yes

@@ -1,13 +1,13 @@
-- name: Check if Service Exists
+- name: check if service exists
   stat: path={{ systemd_dir }}/k3s.service
   register: service_status
 
-- name: Stop Service
+- name: stop service
   service: name=k3s state=stopped
   when: service_status.stat.exists
   register: service_stopped
 
-- name: Copy K3s service file
+- name: copy k3s service file
   register: k3s_service
   template:
     src: "k3s.service.j2"
@@ -16,7 +16,7 @@
     group: root
     mode: 0644
 
-- name: Copy K3 Config file
+- name: copy k3s config file
   template:
     src: "k3s.config.yml.j2"
     dest: "/etc/rancher/k3s/config.yml"
@@ -25,7 +25,7 @@
     mode: 0644
   when: harden_enabled == false
 
-- name: Copy K3S Harden Config file
+- name: copy k3s harden config file
   template:
     src: "k3s.config.harden.yml.j2"
     dest: "/etc/rancher/k3s/config.yml"
@@ -34,7 +34,7 @@
     mode: 0644
   when: harden_enabled == true
 
-- name: Create Audit-Log
+- name: create audit-log
   copy:
     content: ""
     dest: "/etc/rancher/k3s/audit-log"
@@ -44,13 +44,18 @@
     mode: 0644
   when: harden_enabled == true
 
-- name: Remove Audit-Log file
-  ansible.builtin.file:
+- name: remove audit-log file
+  file:
     path: "/etc/rancher/k3s/audit-log"
     state: absent
   when: harden_enabled == false
 
-- name: Copy Policy file
+- name: creates manifests directory
+  file:
+    path: /var/lib/rancher/k3s/server/manifests
+    state: directory
+
+- name: copy policy file
   template:
     src: "k3s.policy.yml.j2"
     dest: "/var/lib/rancher/k3s/server/manifests/policy.yml"
@@ -59,74 +64,74 @@
     mode: 0644
   when: harden_enabled == true
 
-- name: Remove Policy file
+- name: remove policy file
   ansible.builtin.file:
     path: "/var/lib/rancher/k3s/server/manifests/policy.yml"
     state: absent
   when: harden_enabled == false
 
-- name: Enable and check K3s service
+- name: enable and check k3s service
   systemd:
     name: k3s
     daemon_reload: yes
     state: restarted
     enabled: yes
 
-- name: Wait for node-token
+- name: wait for node-token
   wait_for:
     path: /var/lib/rancher/k3s/server/node-token
 
-- name: Register node-token file access mode
+- name: register node-token file access mode
   stat:
     path: /var/lib/rancher/k3s/server
   register: p
 
-- name: Change file access node-token
+- name: change file access node-token
   file:
     path: /var/lib/rancher/k3s/server
     mode: "g+rx,o+rx"
 
-- name: Read node-token from master
+- name: read node-token from master
   slurp:
     src: /var/lib/rancher/k3s/server/node-token
   register: node_token
 
-- name: Store Master node-token
+- name: store master node-token
   set_fact:
     token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
 
-- name: Restore node-token file access
+- name: restore node-token file access
   file:
     path: /var/lib/rancher/k3s/server
     mode: "{{ p.stat.mode }}"
 
-- name: Create directory .kube
+- name: create directory .kube
   file:
     path: ~{{ ansible_user }}/.kube
     state: directory
     owner: "{{ ansible_user }}"
     mode: "u=rwx,g=rx,o="
 
-- name: Change k3s.yaml permissions to 644
+- name: change k3s.yaml permissions to 644
   file:
     path: /etc/rancher/k3s/k3s.yaml
     owner: "{{ ansible_user }}"
     mode: '644'
 
-- name: Replace https://localhost:6443 by https://master-ip:6443
+- name: replace https://localhost:6443 by https://master-ip:6443
   command: >-
     k3s kubectl config set-cluster default
       --server=https://{{ master_ip }}:6443
       --kubeconfig ~{{ ansible_user }}/.kube/config
   changed_when: true
 
-- name: Create kubectl symlink
+- name: create kubectl symlink
   file:
     src: /usr/local/bin/k3s
     dest: /usr/local/bin/kubectl
     state: link
 
-- name: Create crictl symlink
+- name: create crictl symlink
   file:
     src: /usr/local/bin/k3s
     dest: /usr/local/bin/crictl
