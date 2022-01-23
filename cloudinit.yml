@@ -3,7 +3,7 @@
   become: yes
   vars:
     ansible_user: root
-    ansible_port: 22
+    ansible_port: 202
     ansible_ssh_private_key_file: ~/.ssh/xxx
 
     template_id: 901
@@ -18,7 +18,7 @@
 
   tasks:
   - name: "Install required Packages"
-    shell: "apt install --no-install-recommends --no-install-suggests {{ item }}"
+    shell: "apt install -y --no-install-recommends --no-install-suggests {{ item }}"
     loop:
       - "libguestfs-tools"
 
@@ -53,10 +53,10 @@
     shell: qm importdisk {{ template_id }} downloadSwap/{{ template_url.split("/")[-1] }} local-lvm
 
   - name: "VM | change main disk"
-    shell: qm set {{ template_id }} --scsihw virtio-scsi-pci --scsi0 local-lVM |vm-{{ template_id }}-disk-0
+    shell: qm set {{ template_id }} --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-{{ template_id }}-disk-0
 
   - name: "VM | add cloud-init image"
-    shell: qm set {{ template_id }} --ide2 local-lVM |cloudinit
+    shell: qm set {{ template_id }} --ide2 local-lvm:cloudinit
 
   - name: "VM | set cloudinit as boot disk"
     shell: qm set {{ template_id }} --boot c --bootdisk scsi0
