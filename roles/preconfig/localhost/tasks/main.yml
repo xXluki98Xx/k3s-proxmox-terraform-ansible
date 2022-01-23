@@ -16,7 +16,7 @@
     - [ "", "amd64" ]
     - [ "-arm64", "arm64" ]
     - [ "-armhf", "arm" ]
-  ignore_errors: yes
+  ignore_errors: true
   when:
     - download_local == true
 
