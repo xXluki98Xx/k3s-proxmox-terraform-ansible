@@ -28,10 +28,10 @@
 - name: Config k3s VMs
   hosts: k3s_cluster
   roles:
-    - role: preconfig/caching
-    - role: raspberrypi
-    - role: preconfig/prereq
-    - role: preconfig/download
+    - role: cluster/caching
+    - role: preconfig/raspberrypi
+    - role: cluster/prereq
+    - role: cluster/download
     - role: hardening/cluster
   become: yes
 
