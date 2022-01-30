@@ -64,3 +64,9 @@
   connection: local
   roles:
    - role: postconfig/localhost
+
+- name: Deploy Helm Charts
+  hosts: localhost
+  connection: local
+  roles:
+   - role: helm/longhorn

@@ -1,0 +1,5 @@
+defaultSettings:
+  createDefaultDiskLabeledNodes: true
+
+persistence:
+  defaultClassReplicaCount: 1

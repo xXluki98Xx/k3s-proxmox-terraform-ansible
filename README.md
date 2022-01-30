@@ -6,6 +6,7 @@
 * Bandwidth reduction due to proxy usage
 * Added Playbook for VM-Template creation
 * Terraform can now create an equal cluster on Proxmox and in Hetzner Cloud
+* Added Helm deploy for Longhorn
 
 Currently only on Debian 11 tested
 
